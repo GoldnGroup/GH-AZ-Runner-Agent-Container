@@ -24,8 +24,12 @@ steps:
       docker --version
       docker info
 
+      Write-Host "DockerHub username from pipeline: '$(DOCKERHUB_USERNAME)'"
+      Write-Host "DockerHub image from pipeline: '$(DOCKERHUB_IMAGE)'"
+      Write-Host "DockerHub token length: $($env:DOCKERHUB_TOKEN.Length)"
+
       Write-Host "Logging in to Docker Hub..."
-      "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+      $env:DOCKERHUB_TOKEN | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
       if ($LASTEXITCODE -ne 0) { throw "Docker login failed" }
 
       Write-Host "Building Docker image..."
@@ -39,3 +43,5 @@ steps:
       docker logout
 
       Write-Host "Docker image published: $(DOCKERHUB_IMAGE):latest"
+  env:
+    DOCKERHUB_TOKEN: $(DOCKERHUB_TOKEN)
