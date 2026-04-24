@@ -34,7 +34,7 @@ steps:
       Write-Host "DockerHub token SHA256: $hashString"
 
       Write-Host "Logging in to Docker Hub..."
-      $env:DOCKERHUB_TOKEN | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+      docker login -u "$(DOCKERHUB_USERNAME)" -p "$env:DOCKERHUB_TOKEN"
       if ($LASTEXITCODE -ne 0) { throw "Docker login failed" }
 
       Write-Host "Building Docker image..."
