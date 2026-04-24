@@ -22,7 +22,9 @@ RUN useradd -m -u 1000 -s /bin/bash runner
 WORKDIR /runner
 
 COPY start.sh /runner/start.sh
-RUN chmod +x /runner/start.sh && chown -R runner:runner /runner
+RUN sed -i 's/\r$//' /runner/start.sh \
+    && chmod +x /runner/start.sh \
+    && chown -R runner:runner /runner
 
 USER runner
 
