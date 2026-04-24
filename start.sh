@@ -28,18 +28,24 @@ run_azdo() {
     rm agent.tar.gz
   fi
 
-  ./config.sh \
-    --unattended \
-    --url "$AZP_URL" \
-    --auth pat \
-    --token "$AZP_TOKEN" \
-    --pool "$AZP_POOL" \
-    --agent "$AZP_AGENT_NAME" \
-    --work "$AZP_WORK" \
-    --acceptTeeEula \
-    --replace
+  if [ -f ".agent" ]; then
+    echo "Azure DevOps agent already configured. Reusing existing configuration."
+  else
+    echo "Configuring Azure DevOps agent..."
 
-  echo "Azure DevOps agent configured. Starting..."
+    ./config.sh \
+      --unattended \
+      --url "$AZP_URL" \
+      --auth pat \
+      --token "$AZP_TOKEN" \
+      --pool "$AZP_POOL" \
+      --agent "$AZP_AGENT_NAME" \
+      --work "$AZP_WORK" \
+      --acceptTeeEula \
+      --replace
+  fi
+
+  echo "Azure DevOps agent starting..."
   ./run.sh
 }
 
@@ -112,24 +118,30 @@ run_github() {
     rm actions-runner.tar.gz
   fi
 
-  echo "Requesting GitHub runner registration token..."
-  RUNNER_TOKEN="$(get_github_runner_token)"
+  if [ -f ".runner" ]; then
+    echo "GitHub runner already configured. Reusing existing configuration."
+  else
+    echo "Requesting GitHub runner registration token..."
+    RUNNER_TOKEN="$(get_github_runner_token)"
 
-  if [ -z "$RUNNER_TOKEN" ] || [ "$RUNNER_TOKEN" = "null" ]; then
-    echo "Failed to obtain GitHub runner registration token."
-    exit 1
+    if [ -z "$RUNNER_TOKEN" ] || [ "$RUNNER_TOKEN" = "null" ]; then
+      echo "Failed to obtain GitHub runner registration token."
+      exit 1
+    fi
+
+    echo "Configuring GitHub runner..."
+
+    ./config.sh \
+      --unattended \
+      --url "$REG_URL" \
+      --token "$RUNNER_TOKEN" \
+      --name "$GITHUB_RUNNER_NAME" \
+      --labels "$GITHUB_RUNNER_LABELS" \
+      --work "$GITHUB_WORK" \
+      --replace
   fi
 
-  ./config.sh \
-    --unattended \
-    --url "$REG_URL" \
-    --token "$RUNNER_TOKEN" \
-    --name "$GITHUB_RUNNER_NAME" \
-    --labels "$GITHUB_RUNNER_LABELS" \
-    --work "$GITHUB_WORK" \
-    --replace
-
-  echo "GitHub runner configured. Starting..."
+  echo "GitHub runner starting..."
   ./run.sh
 }
 
