@@ -22,15 +22,19 @@ steps:
       $ErrorActionPreference = "Stop"
 
       docker --version
+      docker info
 
       Write-Host "Logging in to Docker Hub..."
       "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+      if ($LASTEXITCODE -ne 0) { throw "Docker login failed" }
 
       Write-Host "Building Docker image..."
       docker build -t "$(DOCKERHUB_IMAGE):latest" .
+      if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
 
       Write-Host "Pushing Docker image..."
       docker push "$(DOCKERHUB_IMAGE):latest"
+      if ($LASTEXITCODE -ne 0) { throw "Docker push failed" }
 
       docker logout
 
