@@ -1,0 +1,37 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr: none
+
+pool:
+  name: YOUR_AGENT_POOL_NAME
+
+variables:
+- group: dockerhub-unraid-cicd-runner
+
+steps:
+- checkout: self
+
+- task: PowerShell@2
+  displayName: Build and push Docker image to Docker Hub
+  inputs:
+    targetType: inline
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      docker --version
+
+      Write-Host "Logging in to Docker Hub..."
+      "$(DOCKERHUB_TOKEN)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+
+      Write-Host "Building Docker image..."
+      docker build -t "$(DOCKERHUB_IMAGE):latest" .
+
+      Write-Host "Pushing Docker image..."
+      docker push "$(DOCKERHUB_IMAGE):latest"
+
+      docker logout
+
+      Write-Host "Docker image published: $(DOCKERHUB_IMAGE):latest"
