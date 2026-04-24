@@ -6,7 +6,7 @@ trigger:
 pr: none
 
 pool:
-  name: YOUR_AGENT_POOL_NAME
+  name: SelfHosted
 
 variables:
 - group: dockerhub-unraid-cicd-runner
