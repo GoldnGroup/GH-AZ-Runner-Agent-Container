@@ -8,17 +8,7 @@ if [ -z "$RUNNER_MODE" ]; then
   exit 1
 fi
 
-# If container starts as root, fix mounted appdata permissions,
-# then restart this script as the non-root runner user.
-if [ "$(id -u)" = "0" ]; then
-  mkdir -p /runner-data
-  chown -R runner:runner /runner-data /runner /opt/azdo-agent /opt/github-runner
-
-  echo "Fixing permissions and dropping to runner user..."
-  exec su -s /bin/bash runner -c "/runner/start.sh"
-fi
-
-start_rootless_docker_if_enabled() {
+start_embedded_docker_if_enabled() {
   ENABLE_DOCKER="${ENABLE_DOCKER:-false}"
 
   if [ "$ENABLE_DOCKER" != "true" ]; then
@@ -26,21 +16,22 @@ start_rootless_docker_if_enabled() {
     return
   fi
 
+  if [ "${EMBEDDED_DOCKER_STARTED:-false}" = "true" ]; then
+    echo "Embedded Docker already started."
+    return
+  fi
+
   echo "Starting embedded Docker daemon..."
 
-  export XDG_RUNTIME_DIR="/tmp/runner-runtime"
-  export DOCKER_HOST="unix:///tmp/runner-runtime/docker.sock"
+  mkdir -p /var/lib/docker
+  dockerd \
+    --host=unix:///var/run/docker.sock \
+    --storage-driver=overlay2 \
+    > /tmp/dockerd.log 2>&1 &
 
-  mkdir -p "$XDG_RUNTIME_DIR"
-  chmod 700 "$XDG_RUNTIME_DIR"
-
-  dockerd-rootless.sh \
-    --host="$DOCKER_HOST" \
-    --storage-driver=fuse-overlayfs \
-    > /tmp/dockerd-rootless.log 2>&1 &
-
-  for i in $(seq 1 30); do
+  for i in $(seq 1 60); do
     if docker info >/dev/null 2>&1; then
+      chmod 666 /var/run/docker.sock || true
       echo "Embedded Docker daemon is ready."
       docker --version
       return
@@ -50,9 +41,22 @@ start_rootless_docker_if_enabled() {
   done
 
   echo "Embedded Docker failed to start. Logs:"
-  cat /tmp/dockerd-rootless.log || true
+  cat /tmp/dockerd.log || true
   exit 1
 }
+
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p /runner-data
+  chown -R runner:runner /runner-data /runner /opt/azdo-agent /opt/github-runner
+
+  if [ "${ENABLE_DOCKER:-false}" = "true" ]; then
+    start_embedded_docker_if_enabled
+    export EMBEDDED_DOCKER_STARTED=true
+  fi
+
+  echo "Fixing permissions and dropping to runner user..."
+  exec su -m -s /bin/bash runner -c "/runner/start.sh"
+fi
 
 copy_agent_if_needed() {
   local source_dir="$1"
@@ -289,7 +293,7 @@ run_github() {
   ./run.sh
 }
 
-start_rootless_docker_if_enabled
+start_embedded_docker_if_enabled
 
 case "$RUNNER_MODE" in
   azdo)
