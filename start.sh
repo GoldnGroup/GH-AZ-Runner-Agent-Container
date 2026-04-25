@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNNER_MODE="${RUNNER_MODE:-${RUNNER_TYPE:-}}"
+USE_AZDO="${USE_AZDO:-false}"
+USE_GITHUB="${USE_GITHUB:-false}"
+ENABLE_DOCKER="${ENABLE_DOCKER:-false}"
 
-if [ -z "$RUNNER_MODE" ]; then
-  echo "Missing RUNNER_MODE. Use: azdo, github, or both."
+if [ "$USE_AZDO" != "true" ] && [ "$USE_GITHUB" != "true" ]; then
+  echo "Nothing to start. Set USE_AZDO=true and/or USE_GITHUB=true."
   exit 1
 fi
 
 start_embedded_docker_if_enabled() {
-  ENABLE_DOCKER="${ENABLE_DOCKER:-false}"
-
   if [ "$ENABLE_DOCKER" != "true" ]; then
     echo "Embedded Docker is disabled. Set ENABLE_DOCKER=true to enable Docker builds."
     return
@@ -23,10 +23,13 @@ start_embedded_docker_if_enabled() {
 
   echo "Starting embedded Docker daemon..."
 
-  mkdir -p /var/lib/docker
+  mkdir -p /runner-data/docker /runner-data/docker-exec
+
   dockerd \
     --host=unix:///var/run/docker.sock \
-    --storage-driver=overlay2 \
+    --data-root=/runner-data/docker \
+    --exec-root=/runner-data/docker-exec \
+    ${DOCKER_OPTS:-} \
     > /tmp/dockerd.log 2>&1 &
 
   for i in $(seq 1 60); do
@@ -36,7 +39,6 @@ start_embedded_docker_if_enabled() {
       docker --version
       return
     fi
-
     sleep 1
   done
 
@@ -49,7 +51,7 @@ if [ "$(id -u)" = "0" ]; then
   mkdir -p /runner-data
   chown -R runner:runner /runner-data /runner /opt/azdo-agent /opt/github-runner
 
-  if [ "${ENABLE_DOCKER:-false}" = "true" ]; then
+  if [ "$ENABLE_DOCKER" = "true" ]; then
     start_embedded_docker_if_enabled
     export EMBEDDED_DOCKER_STARTED=true
   fi
@@ -167,11 +169,11 @@ ensure_latest_github_runner() {
 }
 
 run_azdo() {
-  if [ -z "${AZP_URL:-}" ]; then echo "Missing AZP_URL"; exit 1; fi
-  if [ -z "${AZP_TOKEN:-}" ]; then echo "Missing AZP_TOKEN"; exit 1; fi
+  if [ -z "${AZP_URL:-}" ]; then echo "USE_AZDO=true but AZP_URL is missing."; exit 1; fi
+  if [ -z "${AZP_TOKEN:-}" ]; then echo "USE_AZDO=true but AZP_TOKEN is missing."; exit 1; fi
 
-  AZP_POOL="${AZP_POOL:-Default}"
-  AZP_AGENT_NAME="${AZP_AGENT_NAME:-$(hostname)-azdo}"
+  AZP_POOL="${AZP_POOL:-SelfHosted}"
+  AZP_AGENT_NAME="${AZP_AGENT_NAME:-unraid-azure-pipelines-agent}"
   AZP_WORK="${AZP_WORK:-_work}"
 
   mkdir -p /runner-data/azdo
@@ -245,18 +247,23 @@ run_github() {
   GITHUB_SCOPE="${GITHUB_SCOPE:-repo}"
 
   if [ "$GITHUB_SCOPE" = "repo" ]; then
-    if [ -z "${GITHUB_URL:-}" ]; then echo "Missing GITHUB_URL"; exit 1; fi
+    if [ -z "${GITHUB_URL:-}" ]; then echo "USE_GITHUB=true but GITHUB_URL is missing."; exit 1; fi
     REG_URL="$GITHUB_URL"
   elif [ "$GITHUB_SCOPE" = "org" ]; then
-    if [ -z "${GITHUB_ORG:-}" ]; then echo "Missing GITHUB_ORG"; exit 1; fi
+    if [ -z "${GITHUB_ORG:-}" ]; then echo "USE_GITHUB=true but GITHUB_ORG is missing."; exit 1; fi
     REG_URL="https://github.com/${GITHUB_ORG}"
   else
     echo "Invalid GITHUB_SCOPE: $GITHUB_SCOPE. Use: repo or org."
     exit 1
   fi
 
-  GITHUB_RUNNER_NAME="${GITHUB_RUNNER_NAME:-$(hostname)-github}"
-  GITHUB_RUNNER_LABELS="${GITHUB_RUNNER_LABELS:-unraid,linux,pwsh}"
+  if [ -z "${GITHUB_PAT:-}" ] && [ -z "${GITHUB_RUNNER_TOKEN:-}" ]; then
+    echo "USE_GITHUB=true but neither GITHUB_PAT nor GITHUB_RUNNER_TOKEN is set."
+    exit 1
+  fi
+
+  GITHUB_RUNNER_NAME="${GITHUB_RUNNER_NAME:-unraid-github-actions-runner}"
+  GITHUB_RUNNER_LABELS="${GITHUB_RUNNER_LABELS:-SelfHosted}"
   GITHUB_WORK="${GITHUB_WORK:-_work}"
 
   mkdir -p /runner-data/github
@@ -295,24 +302,16 @@ run_github() {
 
 start_embedded_docker_if_enabled
 
-case "$RUNNER_MODE" in
-  azdo)
-    run_azdo
-    ;;
-  github)
-    run_github
-    ;;
-  both)
-    run_azdo &
-    AZDO_PID=$!
+if [ "$USE_AZDO" = "true" ] && [ "$USE_GITHUB" = "true" ]; then
+  run_azdo &
+  AZDO_PID=$!
 
-    run_github &
-    GITHUB_PID=$!
+  run_github &
+  GITHUB_PID=$!
 
-    wait $AZDO_PID $GITHUB_PID
-    ;;
-  *)
-    echo "Invalid RUNNER_MODE: $RUNNER_MODE. Use: azdo, github, or both."
-    exit 1
-    ;;
-esac
+  wait "$AZDO_PID" "$GITHUB_PID"
+elif [ "$USE_AZDO" = "true" ]; then
+  run_azdo
+elif [ "$USE_GITHUB" = "true" ]; then
+  run_github
+fi
