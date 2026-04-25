@@ -124,12 +124,12 @@ run_azdo() {
   AZP_AGENT_NAME="${AZP_AGENT_NAME:-$(hostname)-azdo}"
   AZP_WORK="${AZP_WORK:-_work}"
 
-  mkdir -p /runner/azdo
-  cd /runner/azdo
+  mkdir -p /runner-data/azdo
+  cd /runner-data/azdo
 
-  copy_agent_if_needed /opt/azdo-agent /runner/azdo
-  ensure_latest_azdo_agent /runner/azdo
-  cd /runner/azdo
+  copy_agent_if_needed /opt/azdo-agent /runner-data/azdo
+  ensure_latest_azdo_agent /runner-data/azdo
+  cd /runner-data/azdo
 
   if [ -f ".agent" ]; then
     echo "Azure DevOps agent already configured. Reusing existing configuration."
@@ -209,12 +209,12 @@ run_github() {
   GITHUB_RUNNER_LABELS="${GITHUB_RUNNER_LABELS:-unraid,linux,pwsh}"
   GITHUB_WORK="${GITHUB_WORK:-_work}"
 
-  mkdir -p /runner/github
-  cd /runner/github
+  mkdir -p /runner-data/github
+  cd /runner-data/github
 
-  copy_agent_if_needed /opt/github-runner /runner/github
-  ensure_latest_github_runner /runner/github
-  cd /runner/github
+  copy_agent_if_needed /opt/github-runner /runner-data/github
+  ensure_latest_github_runner /runner-data/github
+  cd /runner-data/github
 
   if [ -f ".runner" ]; then
     echo "GitHub runner already configured. Reusing existing configuration."
