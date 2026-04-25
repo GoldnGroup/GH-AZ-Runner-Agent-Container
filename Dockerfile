@@ -25,10 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     docker-ce-cli \
     containerd.io \
     docker-buildx-plugin \
-    docker-ce-rootless-extras \
     && rm -rf /var/lib/apt/lists/*
-
-RUN which dockerd-rootless.sh
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
@@ -39,12 +36,9 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsof
 
 RUN useradd -m -u 1000 -s /bin/bash runner
 
-RUN echo "runner:100000:65536" >> /etc/subuid \
-    && echo "runner:100000:65536" >> /etc/subgid
-
 WORKDIR /runner
 
-RUN mkdir -p /opt/azdo-agent /opt/github-runner
+RUN mkdir -p /opt/azdo-agent /opt/github-runner /runner-data
 
 RUN set -eux; \
     if [ "$AZP_AGENT_VERSION" = "latest" ]; then \
@@ -74,11 +68,8 @@ RUN set -eux; \
 
 COPY start.sh /runner/start.sh
 
-COPY start.sh /runner/start.sh
-
 RUN sed -i 's/\r$//' /runner/start.sh \
     && chmod +x /runner/start.sh \
-    && mkdir -p /runner-data \
     && chown -R runner:runner /runner /runner-data /opt/azdo-agent /opt/github-runner
 
 USER root
