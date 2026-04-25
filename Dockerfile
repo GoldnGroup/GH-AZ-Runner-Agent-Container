@@ -12,13 +12,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl wget git jq unzip tar gzip \
     apt-transport-https gnupg software-properties-common \
     libicu70 libssl3 libkrb5-3 zlib1g \
-    docker.io \
-    docker-buildx \
-    fuse-overlayfs \
-    slirp4netns \
-    uidmap \
-    iptables \
-    dbus-user-session \
+    fuse-overlayfs slirp4netns uidmap iptables dbus-user-session \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
+    && chmod a+r /etc/apt/keyrings/docker.asc \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    docker-ce docker-ce-cli containerd.io docker-buildx-plugin \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
@@ -72,6 +75,6 @@ RUN sed -i 's/\r$//' /runner/start.sh \
     && mkdir -p /runner-data \
     && chown -R runner:runner /runner /runner-data /opt/azdo-agent /opt/github-runner
 
-USER runner
+USER root
 
 ENTRYPOINT ["/runner/start.sh"]
