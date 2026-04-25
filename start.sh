@@ -22,8 +22,8 @@ run_azdo() {
   if [ ! -f ./config.sh ]; then
     echo "Downloading Azure DevOps agent ${AZP_AGENT_VERSION}..."
     curl -fsSL \
-      "https://vstsagentpackage.azureedge.net/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${AZP_AGENT_VERSION}.tar.gz" \
-      -o agent.tar.gz
+        "https://download.agent.dev.azure.com/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${AZP_AGENT_VERSION}.tar.gz" \
+        -o agent.tar.gz
     tar -xzf agent.tar.gz
     rm agent.tar.gz
   fi
