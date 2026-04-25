@@ -21,8 +21,14 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    docker-ce docker-ce-cli containerd.io docker-buildx-plugin \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-ce-rootless-extras \
     && rm -rf /var/lib/apt/lists/*
+
+RUN which dockerd-rootless.sh
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
