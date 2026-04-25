@@ -36,6 +36,6 @@
   <Config Name="GitHub Runner Work Folder" Target="GITHUB_WORK" Default="_work" Mode="" Description="GitHub Actions work folder. Leave as _work unless you need a custom path." Type="Variable" Display="advanced" Required="false" Mask="false">_work</Config>
  
   <Config Name="Enable Embedded Docker" Target="ENABLE_DOCKER" Default="false" Mode="" Description="Set to true to enable Docker builds inside the runner container. Requires Extra Parameters to include --privileged." Type="Variable" Display="always" Required="true" Mask="false">false</Config>
-  <Config Name="Docker Storage Driver" Target="DOCKER_STORAGE_DRIVER" Default="overlay2" Mode="" Description="Storage driver used by embedded Docker. Default 'vfs' works reliably on Unraid. Advanced users may try 'overlay2' for better performance." Type="Variable" Display="advanced" Required="false" Mask="false">overlay2</Config>
+  <Config Name="Docker Storage Driver" Target="DOCKER_STORAGE_DRIVER" Default="vfs" Mode="" Description="Storage driver used by embedded Docker. Default 'vfs' works reliably on Unraid. Advanced users may try 'overlay2' for better performance." Type="Variable" Display="advanced" Required="false" Mask="false">vfs</Config>
   <Config Name="Advanced Docker Options" Target="DOCKER_OPTS" Default="" Mode="" Description="Optional extra options passed to the embedded Docker daemon. Leave empty unless troubleshooting or customizing Docker." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
 </Container>
