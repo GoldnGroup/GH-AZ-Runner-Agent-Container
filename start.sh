@@ -30,6 +30,7 @@ start_embedded_docker_if_enabled() {
     --host=unix:///var/run/docker.sock \
     --data-root=/runner-data/docker \
     --exec-root=/runner-data/docker-exec \
+    --storage-driver="${DOCKER_STORAGE_DRIVER:-vfs}" \
     ${DOCKER_OPTS:-} \
     > /tmp/dockerd.log 2>&1 &
 
@@ -58,7 +59,7 @@ if [ "$(id -u)" = "0" ]; then
   fi
 
   echo "Fixing permissions and dropping to runner user..."
-  exec su -m -s /bin/bash runner -c "/runner/start.sh"
+  exec su -s /bin/bash runner -c "export HOME=/home/runner; export USER=runner; /runner/start.sh"
 fi
 
 copy_agent_if_needed() {
