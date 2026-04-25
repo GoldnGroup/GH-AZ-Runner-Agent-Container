@@ -21,16 +21,21 @@ start_embedded_docker_if_enabled() {
     return
   fi
 
-  echo "Starting embedded Docker daemon..."
+    echo "Starting embedded Docker daemon..."
 
-  rm -f /var/run/docker.pid
-  mkdir -p /runner-data/docker /runner-data/docker-exec
+    # Clean stale Docker/containerd PID files from previous starts
+    rm -f /var/run/docker.pid
+    rm -f /var/run/docker/containerd/containerd.pid
+    rm -f /runner-data/docker.pid
+    rm -f /runner-data/docker/containerd/containerd.pid
+
+    mkdir -p /runner-data/docker /runner-data/docker-exec
 
   dockerd \
     --host=unix:///var/run/docker.sock \
     --data-root=/runner-data/docker \
     --exec-root=/runner-data/docker-exec \
-    --storage-driver="${DOCKER_STORAGE_DRIVER:-vfs}" \
+    --storage-driver="${DOCKER_STORAGE_DRIVER:-overlay2}" \
     ${DOCKER_OPTS:-} \
     > /tmp/dockerd.log 2>&1 &
 
