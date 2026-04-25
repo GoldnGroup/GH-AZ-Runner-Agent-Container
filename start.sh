@@ -8,6 +8,114 @@ if [ -z "$RUNNER_MODE" ]; then
   exit 1
 fi
 
+copy_agent_if_needed() {
+  local source_dir="$1"
+  local target_dir="$2"
+
+  mkdir -p "$target_dir"
+
+  if [ ! -f "$target_dir/config.sh" ]; then
+    echo "Copying agent files to $target_dir..."
+    cp -a "$source_dir/." "$target_dir/"
+  fi
+}
+
+resolve_latest_azdo_version() {
+  curl -fsSL "https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest" \
+    | jq -r '.tag_name' \
+    | sed 's/^v//'
+}
+
+resolve_latest_github_version() {
+  curl -fsSL "https://api.github.com/repos/actions/runner/releases/latest" \
+    | jq -r '.tag_name' \
+    | sed 's/^v//'
+}
+
+ensure_latest_azdo_agent() {
+  local target_dir="$1"
+  local baked_version
+  local latest_version
+  local current_version
+
+  baked_version="$(cat /opt/azdo-agent/.version 2>/dev/null || echo unknown)"
+  current_version="$(cat "$target_dir/.version" 2>/dev/null || echo "$baked_version")"
+
+  echo "Azure DevOps agent baked version: $baked_version"
+  echo "Azure DevOps agent current version: $current_version"
+
+  latest_version="$(resolve_latest_azdo_version)"
+  echo "Azure DevOps agent latest version: $latest_version"
+
+  if [ "$current_version" = "$latest_version" ] && [ -f "$target_dir/config.sh" ]; then
+    echo "Azure DevOps agent already latest. Skipping download."
+    return
+  fi
+
+  if [ "$baked_version" = "$latest_version" ] && [ -f /opt/azdo-agent/config.sh ]; then
+    echo "Baked Azure DevOps agent is latest. Copying baked files."
+    rm -rf "$target_dir"
+    mkdir -p "$target_dir"
+    cp -a /opt/azdo-agent/. "$target_dir/"
+    echo "$baked_version" > "$target_dir/.version"
+    return
+  fi
+
+  echo "Downloading latest Azure DevOps agent $latest_version..."
+  rm -rf "$target_dir"
+  mkdir -p "$target_dir"
+
+  curl -fsSL \
+    "https://download.agent.dev.azure.com/agent/${latest_version}/vsts-agent-linux-x64-${latest_version}.tar.gz" \
+    -o /tmp/azdo-agent.tar.gz
+
+  tar -xzf /tmp/azdo-agent.tar.gz -C "$target_dir"
+  rm /tmp/azdo-agent.tar.gz
+  echo "$latest_version" > "$target_dir/.version"
+}
+
+ensure_latest_github_runner() {
+  local target_dir="$1"
+  local baked_version
+  local latest_version
+  local current_version
+
+  baked_version="$(cat /opt/github-runner/.version 2>/dev/null || echo unknown)"
+  current_version="$(cat "$target_dir/.version" 2>/dev/null || echo "$baked_version")"
+
+  echo "GitHub runner baked version: $baked_version"
+  echo "GitHub runner current version: $current_version"
+
+  latest_version="$(resolve_latest_github_version)"
+  echo "GitHub runner latest version: $latest_version"
+
+  if [ "$current_version" = "$latest_version" ] && [ -f "$target_dir/config.sh" ]; then
+    echo "GitHub runner already latest. Skipping download."
+    return
+  fi
+
+  if [ "$baked_version" = "$latest_version" ] && [ -f /opt/github-runner/config.sh ]; then
+    echo "Baked GitHub runner is latest. Copying baked files."
+    rm -rf "$target_dir"
+    mkdir -p "$target_dir"
+    cp -a /opt/github-runner/. "$target_dir/"
+    echo "$baked_version" > "$target_dir/.version"
+    return
+  fi
+
+  echo "Downloading latest GitHub runner $latest_version..."
+  rm -rf "$target_dir"
+  mkdir -p "$target_dir"
+
+  curl -fsSL \
+    "https://github.com/actions/runner/releases/download/v${latest_version}/actions-runner-linux-x64-${latest_version}.tar.gz" \
+    -o /tmp/github-runner.tar.gz
+
+  tar -xzf /tmp/github-runner.tar.gz -C "$target_dir"
+  rm /tmp/github-runner.tar.gz
+  echo "$latest_version" > "$target_dir/.version"
+}
+
 run_azdo() {
   if [ -z "${AZP_URL:-}" ]; then echo "Missing AZP_URL"; exit 1; fi
   if [ -z "${AZP_TOKEN:-}" ]; then echo "Missing AZP_TOKEN"; exit 1; fi
@@ -19,14 +127,9 @@ run_azdo() {
   mkdir -p /runner/azdo
   cd /runner/azdo
 
-  if [ ! -f ./config.sh ]; then
-    echo "Downloading Azure DevOps agent ${AZP_AGENT_VERSION}..."
-    curl -fsSL \
-        "https://download.agent.dev.azure.com/agent/${AZP_AGENT_VERSION}/vsts-agent-linux-x64-${AZP_AGENT_VERSION}.tar.gz" \
-        -o agent.tar.gz
-    tar -xzf agent.tar.gz
-    rm agent.tar.gz
-  fi
+  copy_agent_if_needed /opt/azdo-agent /runner/azdo
+  ensure_latest_azdo_agent /runner/azdo
+  cd /runner/azdo
 
   if [ -f ".agent" ]; then
     echo "Azure DevOps agent already configured. Reusing existing configuration."
@@ -109,14 +212,9 @@ run_github() {
   mkdir -p /runner/github
   cd /runner/github
 
-  if [ ! -f ./config.sh ]; then
-    echo "Downloading GitHub Actions runner ${GITHUB_RUNNER_VERSION}..."
-    curl -fsSL \
-      "https://github.com/actions/runner/releases/download/v${GITHUB_RUNNER_VERSION}/actions-runner-linux-x64-${GITHUB_RUNNER_VERSION}.tar.gz" \
-      -o actions-runner.tar.gz
-    tar -xzf actions-runner.tar.gz
-    rm actions-runner.tar.gz
-  fi
+  copy_agent_if_needed /opt/github-runner /runner/github
+  ensure_latest_github_runner /runner/github
+  cd /runner/github
 
   if [ -f ".runner" ]; then
     echo "GitHub runner already configured. Reusing existing configuration."
