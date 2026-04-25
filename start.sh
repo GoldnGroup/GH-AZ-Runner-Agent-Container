@@ -8,6 +8,16 @@ if [ -z "$RUNNER_MODE" ]; then
   exit 1
 fi
 
+# If container starts as root, fix mounted appdata permissions,
+# then restart this script as the non-root runner user.
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p /runner-data
+  chown -R runner:runner /runner-data /runner /opt/azdo-agent /opt/github-runner
+
+  echo "Fixing permissions and dropping to runner user..."
+  exec su -s /bin/bash runner -c "/runner/start.sh"
+fi
+
 start_rootless_docker_if_enabled() {
   ENABLE_DOCKER="${ENABLE_DOCKER:-false}"
 
