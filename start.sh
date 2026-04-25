@@ -23,6 +23,7 @@ start_embedded_docker_if_enabled() {
 
   echo "Starting embedded Docker daemon..."
 
+  rm -f /var/run/docker.pid
   mkdir -p /runner-data/docker /runner-data/docker-exec
 
   dockerd \
