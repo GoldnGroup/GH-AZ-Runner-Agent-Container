@@ -8,6 +8,42 @@ if [ -z "$RUNNER_MODE" ]; then
   exit 1
 fi
 
+start_rootless_docker_if_enabled() {
+  ENABLE_DOCKER="${ENABLE_DOCKER:-false}"
+
+  if [ "$ENABLE_DOCKER" != "true" ]; then
+    echo "Embedded Docker is disabled. Set ENABLE_DOCKER=true to enable Docker builds."
+    return
+  fi
+
+  echo "Starting embedded Docker daemon..."
+
+  export XDG_RUNTIME_DIR="/tmp/runner-runtime"
+  export DOCKER_HOST="unix:///tmp/runner-runtime/docker.sock"
+
+  mkdir -p "$XDG_RUNTIME_DIR"
+  chmod 700 "$XDG_RUNTIME_DIR"
+
+  dockerd-rootless.sh \
+    --host="$DOCKER_HOST" \
+    --storage-driver=fuse-overlayfs \
+    > /tmp/dockerd-rootless.log 2>&1 &
+
+  for i in $(seq 1 30); do
+    if docker info >/dev/null 2>&1; then
+      echo "Embedded Docker daemon is ready."
+      docker --version
+      return
+    fi
+
+    sleep 1
+  done
+
+  echo "Embedded Docker failed to start. Logs:"
+  cat /tmp/dockerd-rootless.log || true
+  exit 1
+}
+
 copy_agent_if_needed() {
   local source_dir="$1"
   local target_dir="$2"
@@ -242,6 +278,8 @@ run_github() {
   echo "GitHub runner starting..."
   ./run.sh
 }
+
+start_rootless_docker_if_enabled
 
 case "$RUNNER_MODE" in
   azdo)
