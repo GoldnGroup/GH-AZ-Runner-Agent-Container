@@ -56,9 +56,12 @@ RUN set -eux; \
 
 COPY start.sh /runner/start.sh
 
+COPY start.sh /runner/start.sh
+
 RUN sed -i 's/\r$//' /runner/start.sh \
     && chmod +x /runner/start.sh \
-    && chown -R runner:runner /runner /opt/azdo-agent /opt/github-runner
+    && mkdir -p /runner-data \
+    && chown -R runner:runner /runner /runner-data /opt/azdo-agent /opt/github-runner
 
 USER runner
 
