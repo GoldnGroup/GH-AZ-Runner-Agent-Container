@@ -13,6 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https gnupg software-properties-common \
     libicu70 libssl3 libkrb5-3 zlib1g \
     docker.io \
+    docker-buildx \
+    fuse-overlayfs \
+    slirp4netns \
+    uidmap \
+    iptables \
+    dbus-user-session \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
@@ -23,6 +29,9 @@ RUN wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsof
     && pwsh --version
 
 RUN useradd -m -u 1000 -s /bin/bash runner
+
+RUN echo "runner:100000:65536" >> /etc/subuid \
+    && echo "runner:100000:65536" >> /etc/subgid
 
 WORKDIR /runner
 
