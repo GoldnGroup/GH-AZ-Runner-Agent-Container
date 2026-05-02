@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+      - dev
+
+pr: none
+
+pool:
+  name: SelfHosted
+
+variables:
+- group: github-actions-runner-azure-pipelines-agent
+
+steps:
+- checkout: self
+
+- task: PowerShell@2
+  displayName: Build and push test image to GHCR
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      docker --version
+      docker info
+
+      Write-Host "Logging in to GHCR..."
+      docker login ghcr.io -u "$(GHCR_USERNAME)" -p "$env:GHCR_TOKEN"
+      if ($LASTEXITCODE -ne 0) { throw "GHCR login failed" }
+
+      Write-Host "Building test image..."
+      docker build -t "$(GHCR_IMAGE):test" .
+      if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
+
+      Write-Host "Pushing test image..."
+      docker push "$(GHCR_IMAGE):test"
+      if ($LASTEXITCODE -ne 0) { throw "Docker push failed" }
+
+      docker logout ghcr.io
+
+      Write-Host "Published test image: $(GHCR_IMAGE):test"
+  env:
+    GHCR_TOKEN: $(GHCR_TOKEN)
