@@ -38,3 +38,32 @@ steps:
       Write-Host "Published test image: $(GHCR_IMAGE):test"
   env:
     GHCR_TOKEN: $(GHCR_TOKEN)
+
+- task: PowerShell@2
+  displayName: Publish dev branch to public GitHub repo
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      if ("$(Build.SourceBranch)" -ne "refs/heads/dev") {
+        throw "Dev publishing must be run from dev only. Current branch: $(Build.SourceBranch)"
+      }
+
+      git config user.name "goldngroup-release-bot"
+      git config user.email "release-bot@goldngroup.local"
+
+      $githubUrl = "https://$env:GITHUB_TOKEN@github.com/$(GITHUB_REPO).git"
+
+      if (git remote | Select-String "^github$") {
+        git remote set-url github $githubUrl
+      } else {
+        git remote add github $githubUrl
+      }
+
+      git push github HEAD:dev --force
+
+      Write-Host "Published ADO dev to GitHub dev: $(GITHUB_REPO)"
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
