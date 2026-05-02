@@ -1,11 +1,7 @@
 trigger: none
 pr: none
 
-parameters:
-- name: version
-  displayName: Release version, e.g. v1.0.0
-  type: string
-  default: v0.1.0
+name: v0.1.$(Rev:r)
 
 pool:
   name: SelfHosted
@@ -40,7 +36,7 @@ steps:
     script: |
       $ErrorActionPreference = "Stop"
 
-      $version = "${{ parameters.version }}"
+      $version = "$(Build.BuildNumber)"
 
       docker --version
       docker info
