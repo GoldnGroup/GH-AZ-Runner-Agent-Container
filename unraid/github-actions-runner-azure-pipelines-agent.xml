@@ -17,7 +17,7 @@
   <CPUset/>
   <Shell>sh</Shell>
 
-  <Config Name="Runner Data" Target="/runner-data" Default="/mnt/user/appdata/github-actions-runner-azure-pipelines-agent" Mode="rw" Description="Persistent storage for runner configuration, work folders, updates, and embedded Docker data. Do not map this to /runner." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/github-actions-runner-azure-pipelines-agent</Config>
+  <Config Name="AppData Path" Target="/runner-data" Default="/mnt/user/appdata/gha-azdo-runner" Mode="rw" Description="Persistent storage for runner configuration, work folders, updates, and embedded Docker data. Do not map this to /runner." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/github-actions-runner-azure-pipelines-agent</Config>
 
   <Config Name="Use Azure Pipelines Agent" Target="USE_AZDO" Default="false" Mode="" Description="Set to true to enable Azure Pipelines Agent. If false, all Azure DevOps fields are ignored." Type="Variable" Display="always" Required="true" Mask="false">false</Config>
   <Config Name="Azure DevOps URL" Target="AZP_URL" Default="https://dev.azure.com/YOUR_ORG" Mode="" Description="Azure DevOps organization URL. Example: https://dev.azure.com/myorg" Type="Variable" Display="always" Required="false" Mask="false">https://dev.azure.com/YOUR_ORG</Config>
