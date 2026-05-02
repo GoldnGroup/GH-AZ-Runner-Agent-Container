@@ -1,4 +1,8 @@
-trigger: none
+trigger:
+  branches:
+    include:
+      - dev
+
 pr: none
 
 pool:
