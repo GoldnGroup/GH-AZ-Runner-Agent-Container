@@ -5,13 +5,13 @@
   <Registry>https://ghcr.io/goldngroup/github-actions-runner-azure-pipelines-agent</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
-  <Support>https://github.com/GoldnGroup/unraid-cicd-runner/issues</Support>
-  <Project>https://github.com/GoldnGroup/unraid-cicd-runner</Project>
+  <Support>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container/issues</Support>
+  <Project>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container</Project>
   <Overview>Self-hosted GitHub Actions Runner and Azure Pipelines Agent for Unraid. Run GitHub Actions, Azure DevOps Pipelines, or both from one container. Includes PowerShell 7 and optional embedded Docker build support.</Overview>
   <Category>Productivity: Tools: Development</Category>
   <WebUI/>
-  <TemplateURL>https://raw.githubusercontent.com/GoldnGroup/unraid-cicd-runner/main/unraid/github-actions-runner-azure-pipelines-agent.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/GoldnGroup/unraid-cicd-runner/main/unraid/icon.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/github-actions-runner-azure-pipelines-agent.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/icon.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>
