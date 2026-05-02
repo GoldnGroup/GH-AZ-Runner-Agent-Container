@@ -26,12 +26,11 @@ steps:
     script: |
       $ErrorActionPreference = "Stop"
 
-      $branch = "$(Build.SourceBranch)"
-      Write-Host "Current branch: $branch"
-
-      if ($branch -ne "refs/heads/main") {
-        throw "Release publishing must be run from main only."
+      if ("$(Build.SourceBranch)" -ne "refs/heads/main") {
+        throw "Release publishing must be run from main only. Current branch: $(Build.SourceBranch)"
       }
+
+      Write-Host "Release branch validation passed."
 
 - task: PowerShell@2
   displayName: Build and push production image to GHCR
