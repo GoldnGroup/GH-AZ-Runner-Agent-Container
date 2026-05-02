@@ -76,6 +76,8 @@ steps:
     script: |
       $ErrorActionPreference = "Stop"
 
+      $version = "$(Build.BuildNumber)"
+
       git config user.name "goldngroup-release-bot"
       git config user.email "release-bot@goldngroup.local"
 
@@ -90,9 +92,10 @@ steps:
       git fetch origin main
       git push github HEAD:main --force
 
-      git tag -f "${{ parameters.version }}"
-      git push github "${{ parameters.version }}" --force
+      git tag -f "$version"
+      git push github "$version" --force
 
       Write-Host "Published source to GitHub: $(GITHUB_REPO)"
+      Write-Host "Published Git tag: $version"
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
