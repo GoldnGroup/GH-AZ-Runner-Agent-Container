@@ -1,0 +1,17 @@
+trigger: none
+pr: none
+
+pool:
+  name: SelfHosted
+
+steps:
+- task: PowerShell@2
+  displayName: Test pwsh on ADO runner
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      Write-Host "ADO runner is working"
+      whoami
+      pwsh --version
+      pwsh -c "Write-Host 'PowerShell is working on ADO'"
