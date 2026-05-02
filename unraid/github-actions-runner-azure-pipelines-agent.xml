@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>GitHub Actions Runner and Azure Pipelines Agent</Name>
-  <Repository>pavlospapalexiou/github-actions-runner-azure-pipelines-agent:latest</Repository>
-  <Registry>https://hub.docker.com/r/pavlospapalexiou/github-actions-runner-azure-pipelines-agent</Registry>
+  <Repository>ghcr.io/goldngroup/github-actions-runner-azure-pipelines-agent:latest</Repository>
+  <Registry>https://ghcr.io/goldngroup/github-actions-runner-azure-pipelines-agent</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
   <Support>https://github.com/GoldnGroup/unraid-cicd-runner/issues</Support>
