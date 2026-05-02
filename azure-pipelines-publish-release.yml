@@ -1,0 +1,103 @@
+trigger: none
+pr: none
+
+parameters:
+- name: version
+  displayName: Release version, e.g. v1.0.0
+  type: string
+  default: v0.1.0
+
+pool:
+  name: SelfHosted
+
+variables:
+- group: github-actions-runner-azure-pipelines-agent
+
+steps:
+- checkout: self
+  persistCredentials: true
+  fetchDepth: 0
+
+- task: PowerShell@2
+  displayName: Validate release branch
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      $branch = "$(Build.SourceBranch)"
+      Write-Host "Current branch: $branch"
+
+      if ($branch -ne "refs/heads/main") {
+        throw "Release publishing must be run from main only."
+      }
+
+- task: PowerShell@2
+  displayName: Build and push production image to GHCR
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      $version = "${{ parameters.version }}"
+
+      docker --version
+      docker info
+
+      Write-Host "Logging in to GHCR..."
+      docker login ghcr.io -u "$(GHCR_USERNAME)" -p "$env:GHCR_TOKEN"
+      if ($LASTEXITCODE -ne 0) { throw "GHCR login failed" }
+
+      Write-Host "Building production image..."
+      docker build `
+        -t "$(GHCR_IMAGE):latest" `
+        -t "$(GHCR_IMAGE):$version" `
+        .
+      if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
+
+      Write-Host "Pushing latest..."
+      docker push "$(GHCR_IMAGE):latest"
+      if ($LASTEXITCODE -ne 0) { throw "Docker push latest failed" }
+
+      Write-Host "Pushing version tag..."
+      docker push "$(GHCR_IMAGE):$version"
+      if ($LASTEXITCODE -ne 0) { throw "Docker push version failed" }
+
+      docker logout ghcr.io
+
+      Write-Host "Published production images:"
+      Write-Host "$(GHCR_IMAGE):latest"
+      Write-Host "$(GHCR_IMAGE):$version"
+  env:
+    GHCR_TOKEN: $(GHCR_TOKEN)
+
+- task: PowerShell@2
+  displayName: Publish source to public GitHub repo
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      git config user.name "goldngroup-release-bot"
+      git config user.email "release-bot@goldngroup.local"
+
+      $githubUrl = "https://$env:GITHUB_TOKEN@github.com/$(GITHUB_REPO).git"
+
+      if (git remote | Select-String "^github$") {
+        git remote set-url github $githubUrl
+      } else {
+        git remote add github $githubUrl
+      }
+
+      git fetch origin main
+      git push github HEAD:main --force
+
+      git tag -f "${{ parameters.version }}"
+      git push github "${{ parameters.version }}" --force
+
+      Write-Host "Published source to GitHub: $(GITHUB_REPO)"
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
