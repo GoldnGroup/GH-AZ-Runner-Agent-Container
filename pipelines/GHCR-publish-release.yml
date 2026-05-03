@@ -99,3 +99,64 @@ steps:
       Write-Host "Published Git tag: $version"
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+    - task: PowerShell@2
+  displayName: Publish Unraid template files to ADO templates repo
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $ErrorActionPreference = "Stop"
+
+      $org = "goldngroup"
+      $project = "Code-Storage"
+      $templatesRepo = "Unraid-Templates"
+
+      $sourceXml = "$(Build.SourcesDirectory)/unraid/github-azure-ci-runner-agent.xml"
+      $sourceIcon = "$(Build.SourcesDirectory)/unraid/icon.png"
+
+      if (!(Test-Path $sourceXml)) {
+        throw "Template XML not found: $sourceXml"
+      }
+
+      if (!(Test-Path $sourceIcon)) {
+        throw "Icon not found: $sourceIcon"
+      }
+
+      $workDir = "$(Agent.TempDirectory)/unraid-templates-publish"
+
+      if (Test-Path $workDir) {
+        Remove-Item -Recurse -Force $workDir
+      }
+
+      git config --global user.name "goldngroup-release-bot"
+      git config --global user.email "release-bot@goldngroup.local"
+
+      $encodedPat = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$env:ADO_PAT"))
+      $repoUrl = "https://dev.azure.com/$org/$project/_git/$templatesRepo"
+
+      Write-Host "Cloning ADO templates repo..."
+      git -c http.extraHeader="Authorization: Basic $encodedPat" clone $repoUrl $workDir
+
+      Copy-Item $sourceXml "$workDir/github-azure-ci-runner-agent.xml" -Force
+      Copy-Item $sourceIcon "$workDir/icon.png" -Force
+
+      Set-Location $workDir
+
+      git add github-azure-ci-runner-agent.xml icon.png
+
+      $changes = git status --porcelain
+
+      if ([string]::IsNullOrWhiteSpace($changes)) {
+        Write-Host "No Unraid template changes to publish."
+        exit 0
+      }
+
+      git commit -m "Update GitHub Azure CI Runner Agent template"
+
+      Write-Host "Pushing template files to ADO templates repo..."
+      git -c http.extraHeader="Authorization: Basic $encodedPat" push origin HEAD:main
+
+      Write-Host "Published Unraid template files to ADO repo: $templatesRepo"
+  env:
+    ADO_PAT: $(ADO_PAT)
