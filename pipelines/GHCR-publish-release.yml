@@ -123,6 +123,10 @@ steps:
         throw "Icon not found: $sourceIcon"
       }
 
+      if ([string]::IsNullOrWhiteSpace($env:ADO_PAT)) {
+        throw "ADO_PAT is empty or not available to the pipeline."
+      }
+
       $workDir = "$(Agent.TempDirectory)/unraid-templates-publish"
 
       if (Test-Path $workDir) {
@@ -132,11 +136,15 @@ steps:
       git config --global user.name "goldngroup-release-bot"
       git config --global user.email "release-bot@goldngroup.local"
 
-      $encodedPat = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$env:ADO_PAT"))
+      $encodedPat = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("ado:$env:ADO_PAT"))
       $repoUrl = "https://dev.azure.com/$org/$project/_git/$templatesRepo"
 
       Write-Host "Cloning ADO templates repo..."
-      git -c http.extraHeader="Authorization: Basic $encodedPat" clone $repoUrl $workDir
+      git -c "http.extraHeader=Authorization: Basic $encodedPat" clone $repoUrl $workDir
+
+      if ($LASTEXITCODE -ne 0) {
+        throw "Failed to clone ADO templates repo."
+      }
 
       Copy-Item $sourceXml "$workDir/github-azure-ci-runner-agent.xml" -Force
       Copy-Item $sourceIcon "$workDir/icon.png" -Force
@@ -155,7 +163,11 @@ steps:
       git commit -m "Update GitHub Azure CI Runner Agent template"
 
       Write-Host "Pushing template files to ADO templates repo..."
-      git -c http.extraHeader="Authorization: Basic $encodedPat" push origin HEAD:main
+      git -c "http.extraHeader=Authorization: Basic $encodedPat" push origin HEAD:main
+
+      if ($LASTEXITCODE -ne 0) {
+        throw "Failed to push template files to ADO templates repo."
+      }
 
       Write-Host "Published Unraid template files to ADO repo: $templatesRepo"
   env:
