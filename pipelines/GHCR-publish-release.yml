@@ -100,7 +100,7 @@ steps:
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
 
-    - task: PowerShell@2
+- task: PowerShell@2
   displayName: Publish Unraid template files to ADO templates repo
   inputs:
     targetType: inline
