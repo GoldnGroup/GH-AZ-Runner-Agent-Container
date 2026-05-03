@@ -1,14 +1,35 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>GitHub Actions Runner and Azure Pipelines Agent</Name>
+  <Name>GitHub Azure CI Runner Agent</Name>
   <Repository>ghcr.io/goldngroup/github-actions-runner-azure-pipelines-agent:latest</Repository>
   <Registry>https://ghcr.io/goldngroup/github-actions-runner-azure-pipelines-agent</Registry>
   <Network>bridge</Network>
   <Privileged>false</Privileged>
   <Support>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container/issues</Support>
   <Project>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container</Project>
-  <Overview>Self-hosted GitHub Actions Runner and Azure Pipelines Agent for Unraid. Run GitHub Actions, Azure DevOps Pipelines, or both from one container. Includes PowerShell 7 and optional embedded Docker build support.</Overview>
-  <Category>Productivity: Tools: Development</Category>
+  <Overview>
+  Self-hosted CI runner for GitHub Actions and Azure Pipelines.
+
+  Run builds directly on Unraid with optional embedded Docker support (no external Docker host required).
+
+  Supports:
+  • GitHub Actions runners
+  • Azure DevOps (Azure Pipelines) agents
+  • Docker builds inside the container
+
+  Designed for simplicity:
+  • No manual setup inside the container
+  • Works with Unraid appdata
+  • Configured via UI variables
+
+  Typical use cases:
+  • Home lab CI/CD
+  • Self-hosted build infrastructure
+  • Private automation pipelines
+
+  Keywords: github runner, azure pipelines, azure devops agent, ci/cd, self-hosted runner, docker builds
+  </Overview>
+  <Category>Productivity: Tools: Development, GitHub runner, Azure DevOps agent, CI/CD, pipelines, self-hosted runner</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/github-actions-runner-azure-pipelines-agent.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/icon.png</Icon>
