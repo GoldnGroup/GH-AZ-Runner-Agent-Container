@@ -1,4 +1,5 @@
 trigger: none
+
 pr: none
 
 name: v0.1.$(Rev:r)
