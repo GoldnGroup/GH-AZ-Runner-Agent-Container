@@ -7,56 +7,35 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container/issues</Support>
   <Project>https://github.com/GoldnGroup/GH-AZ-Runner-Agent-Container</Project>
-  <Overview>
-  Self-hosted CI runner for GitHub Actions and Azure Pipelines.
-
-  Run builds directly on Unraid with optional embedded Docker support (no external Docker host required).
-
-  Supports:
-  • GitHub Actions runners
-  • Azure DevOps (Azure Pipelines) agents
-  • Docker builds inside the container
-
-  Designed for simplicity:
-  • No manual setup inside the container
-  • Works with Unraid appdata
-  • Configured via UI variables
-
-  Typical use cases:
-  • Home lab CI/CD
-  • Self-hosted build infrastructure
-  • Private automation pipelines
-
-  Keywords: github runner, azure pipelines, azure devops agent, ci/cd, self-hosted runner, docker builds
-  </Overview>
-  <Category>Productivity: Tools: Development, GitHub runner, Azure DevOps agent, CI/CD, pipelines, self-hosted runner</Category>
+  <Overview>Self-hosted CI runner for GitHub Actions and Azure Pipelines. Run builds directly on Unraid with optional embedded Docker support. Supports GitHub Actions runners, Azure DevOps Pipelines agents, PowerShell 7, and Docker builds inside the container. Designed for home lab CI/CD, private automation pipelines, and self-hosted build infrastructure. Keywords: GitHub runner, GitHub Actions, Azure Pipelines, Azure DevOps agent, CI/CD, self-hosted runner, Docker builds.</Overview>
+  <Category>Tools: Productivity: Development</Category>
   <WebUI/>
-  <TemplateURL>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/github-actions-runner-azure-pipelines-agent.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/GoldnGroup/GH-AZ-Runner-Agent-Container/main/unraid/icon.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/GoldnGroup/unraid-templates/main/github-azure-ci-runner-agent.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/GoldnGroup/unraid-templates/main/icon.png</Icon>
   <ExtraParams>--restart unless-stopped</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <Shell>sh</Shell>
 
-  <Config Name="AppData Path" Target="/runner-data" Default="/mnt/user/appdata/gha-azdo-runner" Mode="rw" Description="Persistent storage for runner configuration, work folders, updates, and embedded Docker data. Do not map this to /runner." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/github-actions-runner-azure-pipelines-agent</Config>
+  <Config Name="Runner Data" Target="/runner-data" Default="/mnt/user/appdata/github-azure-ci-runner-agent" Mode="rw" Description="Persistent storage for runner configuration, work folders, updates, and embedded Docker data. Use a unique appdata path per container. Do not map this to /runner." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/github-azure-ci-runner-agent</Config>
 
   <Config Name="Use Azure Pipelines Agent" Target="USE_AZDO" Default="false" Mode="" Description="Set to true to enable Azure Pipelines Agent. If false, all Azure DevOps fields are ignored." Type="Variable" Display="always" Required="true" Mask="false">false</Config>
   <Config Name="Azure DevOps URL" Target="AZP_URL" Default="https://dev.azure.com/YOUR_ORG" Mode="" Description="Azure DevOps organization URL. Example: https://dev.azure.com/myorg" Type="Variable" Display="always" Required="false" Mask="false">https://dev.azure.com/YOUR_ORG</Config>
-  <Config Name="Azure DevOps PAT" Target="AZP_TOKEN" Default="" Mode="" Description="Azure DevOps Personal Access Token with Agent Pools Read &amp; manage permission. Required only when Use Azure Pipelines Agent is true." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="Azure DevOps PAT" Target="AZP_TOKEN" Default="" Mode="" Description="Azure DevOps Personal Access Token with Agent Pools Read and manage permission. Required only when Use Azure Pipelines Agent is true." Type="Variable" Display="always" Required="false" Mask="true"></Config>
   <Config Name="Azure Agent Pool" Target="AZP_POOL" Default="SelfHosted" Mode="" Description="Azure DevOps Agent Pool name. The pool must already exist in Azure DevOps. Default: SelfHosted." Type="Variable" Display="always" Required="false" Mask="false">SelfHosted</Config>
-  <Config Name="Azure Agent Name" Target="AZP_AGENT_NAME" Default="UnraidAzurePipelinesAgent" Mode="" Description="Name shown for this agent in Azure DevOps." Type="Variable" Display="always" Required="false" Mask="false">unraid-azure-pipelines-agent</Config>
+  <Config Name="Azure Agent Name" Target="AZP_AGENT_NAME" Default="unraid-azure-pipelines-agent" Mode="" Description="Name shown for this agent in Azure DevOps." Type="Variable" Display="always" Required="false" Mask="false">unraid-azure-pipelines-agent</Config>
   <Config Name="Azure Agent Work Folder" Target="AZP_WORK" Default="_work" Mode="" Description="Azure Pipelines work folder. Leave as _work unless you need a custom path." Type="Variable" Display="advanced" Required="false" Mask="false">_work</Config>
 
   <Config Name="Use GitHub Actions Runner" Target="USE_GITHUB" Default="false" Mode="" Description="Set to true to enable GitHub Actions Runner. If false, all GitHub fields are ignored." Type="Variable" Display="always" Required="true" Mask="false">false</Config>
   <Config Name="GitHub Scope" Target="GITHUB_SCOPE" Default="repo" Mode="" Description="Use repo for a repository runner, or org for an organization-level runner." Type="Variable" Display="always" Required="false" Mask="false">repo</Config>
   <Config Name="GitHub Repository URL" Target="GITHUB_URL" Default="https://github.com/YOUR_ORG/YOUR_REPO" Mode="" Description="GitHub repository URL. Required only when GitHub Scope is repo. Example: https://github.com/myorg/myrepo" Type="Variable" Display="always" Required="false" Mask="false">https://github.com/YOUR_ORG/YOUR_REPO</Config>
   <Config Name="GitHub Organization" Target="GITHUB_ORG" Default="YOUR_ORG" Mode="" Description="GitHub organization name. Required only when GitHub Scope is org. Example: myorg" Type="Variable" Display="always" Required="false" Mask="false">YOUR_ORG</Config>
-  <Config Name="GitHub PAT" Target="GITHUB_PAT" Default="" Mode="" Description="GitHub Personal Access Token used to register the runner. For repo scope, grant Administration Read &amp; Write on the selected repository. Required only when Use GitHub Actions Runner is true." Type="Variable" Display="always" Required="false" Mask="true"></Config>
-  <Config Name="GitHub Runner Name" Target="GITHUB_RUNNER_NAME" Default="UnraidGitHubActionsRunner" Mode="" Description="Name shown for this runner in GitHub." Type="Variable" Display="always" Required="false" Mask="false">unraid-github-actions-runner</Config>
+  <Config Name="GitHub PAT" Target="GITHUB_PAT" Default="" Mode="" Description="GitHub Personal Access Token used to register the runner. For repo scope, grant Administration Read and Write on the selected repository. Required only when Use GitHub Actions Runner is true." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="GitHub Runner Name" Target="GITHUB_RUNNER_NAME" Default="unraid-github-actions-runner" Mode="" Description="Name shown for this runner in GitHub." Type="Variable" Display="always" Required="false" Mask="false">unraid-github-actions-runner</Config>
   <Config Name="GitHub Runner Labels" Target="GITHUB_RUNNER_LABELS" Default="SelfHosted" Mode="" Description="Comma-separated labels used to target this runner in workflows. Default: SelfHosted. Example: SelfHosted,unraid,docker" Type="Variable" Display="always" Required="false" Mask="false">SelfHosted</Config>
   <Config Name="GitHub Runner Work Folder" Target="GITHUB_WORK" Default="_work" Mode="" Description="GitHub Actions work folder. Leave as _work unless you need a custom path." Type="Variable" Display="advanced" Required="false" Mask="false">_work</Config>
- 
+
   <Config Name="Enable Embedded Docker" Target="ENABLE_DOCKER" Default="false" Mode="" Description="Set to true to enable Docker builds inside the runner container. Requires Extra Parameters to include --privileged." Type="Variable" Display="always" Required="true" Mask="false">false</Config>
-  <Config Name="Docker Storage Driver" Target="DOCKER_STORAGE_DRIVER" Default="vfs" Mode="" Description="Storage driver used by embedded Docker. Default 'vfs' is slower but works reliably with Unraid appdata paths such as /mnt/user/appdata. Advanced users may try 'overlay2' for better performance at their own risk. Use 'overlay2' only if Runner Data is mapped to a path/filesystem that supports overlay mounts, for example a suitable cache/disk path." Type="Variable" Display="advanced" Required="false" Mask="false">vfs</Config>
+  <Config Name="Docker Storage Driver" Target="DOCKER_STORAGE_DRIVER" Default="vfs" Mode="" Description="Storage driver used by embedded Docker. Default vfs is slower but works reliably with Unraid appdata paths such as /mnt/user/appdata. Use overlay2 only if Runner Data is mapped to a path or filesystem that supports overlay mounts, for example a suitable cache or disk path." Type="Variable" Display="advanced" Required="false" Mask="false">vfs</Config>
   <Config Name="Advanced Docker Options" Target="DOCKER_OPTS" Default="" Mode="" Description="Optional extra options passed to the embedded Docker daemon. Leave empty unless troubleshooting or customizing Docker." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
 </Container>
