@@ -1,3 +1,21 @@
+# ==============================================================================
+# PIPELINE: Pre-Production Test Image Publish & Dev GitHub Sync
+# FILE: GHCR-test-image.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Manual execution only (trigger: none)[cite: 6]
+# REQUIRED BRANCH: refs/heads/dev[cite: 6]
+# AGENT POOL: SelfHosted[cite: 6]
+# VARIABLE GROUP: github-actions-runner-azure-pipelines-agent[cite: 6]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Builds and pushes a test Docker image to GHCR (ghcr.io):
+#    - Target Image Tag: $(GHCR_IMAGE):test[cite: 6]
+# 2. Validates that the current branch is 'refs/heads/dev'[cite: 6].
+# 3. Force-pushes the current 'dev' code state to GitHub:
+#    - Target Repo: https://github.com/$(GITHUB_REPO).git[cite: 6]
+#    - Target Branch: dev[cite: 6]
+# ==============================================================================
+
 trigger: none
 pr: none
 
