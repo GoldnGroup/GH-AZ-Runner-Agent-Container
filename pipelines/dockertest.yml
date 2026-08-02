@@ -1,3 +1,17 @@
+# ==============================================================================
+# PIPELINE: Diagnostic Test - Docker Runner Capabilities
+# FILE: dockertest.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Manual execution only (trigger: none)[cite: 4]
+# AGENT POOL: SelfHosted[cite: 4]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Verifies PowerShell version (`pwsh --version`) on the runner host[cite: 4].
+# 2. Checks Docker daemon status (`docker --version`, `docker info`)[cite: 4].
+# 3. Executes a test container (`docker run --rm hello-world`) to ensure container
+#    runtime permissions and networking are functioning correctly[cite: 4].
+# ==============================================================================
+
 trigger: none
 pr: none
 
