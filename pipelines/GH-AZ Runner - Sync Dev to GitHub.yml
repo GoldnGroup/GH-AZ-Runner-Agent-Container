@@ -1,3 +1,19 @@
+# ==============================================================================
+# PIPELINE: Automated Dev Branch Sync to GitHub
+# FILE: GH-AZ Runner - Sync Dev to GitHub.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Automatic on push to 'dev' branch[cite: 2]
+# REQUIRED BRANCH: refs/heads/dev[cite: 2]
+# AGENT POOL: SelfHosted[cite: 2]
+# VARIABLE GROUP: github-actions-runner-azure-pipelines-agent[cite: 2]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Validates that the build source branch is 'refs/heads/dev'[cite: 2].
+# 2. Automatically force-pushes the latest 'dev' branch code to GitHub:
+#    - Target Repo: https://github.com/$(GITHUB_REPO).git[cite: 2]
+#    - Target Branch: dev[cite: 2]
+# ==============================================================================
+
 trigger:
   branches:
     include:
