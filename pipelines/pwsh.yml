@@ -1,3 +1,16 @@
+# ==============================================================================
+# PIPELINE: Diagnostic Test - PowerShell & Agent Health
+# FILE: pwsh.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Manual execution only (trigger: none)[cite: 5]
+# AGENT POOL: SelfHosted[cite: 5]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Prints host environment user (`whoami`)[cite: 5].
+# 2. Confirms PowerShell Core (`pwsh`) installation and version[cite: 5].
+# 3. Executes a test script block to verify basic inline task execution[cite: 5].
+# ==============================================================================
+
 trigger: none
 pr: none
 
