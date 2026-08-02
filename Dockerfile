@@ -8,8 +8,8 @@ ARG GITHUB_RUNNER_VERSION=latest
 ENV AZP_AGENT_VERSION=${AZP_AGENT_VERSION}
 ENV GITHUB_RUNNER_VERSION=${GITHUB_RUNNER_VERSION}
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl wget git jq unzip tar gzip \
+RUN apt-get update && apt-get install -y --no-install-recommends rsync \
+    ca-certificates curl wget git jq unzip tar gzip openssh-client  \
     apt-transport-https gnupg software-properties-common \
     libicu70 libssl3 libkrb5-3 zlib1g \
     fuse-overlayfs slirp4netns uidmap iptables dbus-user-session \
