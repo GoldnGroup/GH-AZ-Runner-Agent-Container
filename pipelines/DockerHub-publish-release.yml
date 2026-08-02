@@ -1,3 +1,18 @@
+# ==============================================================================
+# PIPELINE: Manual Release to Docker Hub
+# FILE: DockerHub-publish-release.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Manual execution only (trigger: none)[cite: 3]
+# AGENT POOL: SelfHosted[cite: 3]
+# VARIABLE GROUP: github-actions-runner-azure-pipelines-agent[cite: 3]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Log in to Docker Hub using $(DOCKERHUB_USERNAME) and $(DOCKERHUB_TOKEN)[cite: 3].
+# 2. Builds the Dockerfile in the repository root directory[cite: 3].
+# 3. Tags and pushes the resulting image to Docker Hub:
+#    - Target Image: $(DOCKERHUB_IMAGE):latest[cite: 3]
+# ==============================================================================
+
 trigger: none
 
 pr: none

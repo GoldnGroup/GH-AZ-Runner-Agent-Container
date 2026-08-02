@@ -1,3 +1,27 @@
+# ==============================================================================
+# PIPELINE: Production Release, GHCR Publish, Code Sync & ADO Template Push
+# FILE: GHCR-publish-release.yml
+# ------------------------------------------------------------------------------
+# TRIGGER: Manual execution only (trigger: none)[cite: 1]
+# REQUIRED BRANCH: refs/heads/main[cite: 1]
+# AGENT POOL: SelfHosted[cite: 1]
+# VARIABLE GROUP: github-actions-runner-azure-pipelines-agent[cite: 1]
+#
+# WHAT THIS PIPELINE DOES:
+# 1. Branch Validation: Ensures the pipeline is executed strictly from 'main'[cite: 1].
+# 2. Docker Build & Push (GHCR): Builds the Docker image and pushes to GHCR (ghcr.io):
+#    - Image Tags: $(GHCR_IMAGE):latest and $(GHCR_IMAGE):$(Build.BuildNumber)[cite: 1]
+# 3. Public Code Sync (GitHub): Force-pushes the current 'main' branch and release tag:
+#    - Target Repo: https://github.com/$(GITHUB_REPO).git (branch: main)[cite: 1]
+#    - Dynamic Git Tag: $(Build.BuildNumber)[cite: 1]
+# 4. Template Publishing (Azure DevOps): Clones and updates the Unraid templates repo:
+#    - Target ADO Org/Project: goldngroup / Code-Storage[cite: 1]
+#    - Target ADO Repo: Unraid-Templates (branch: main)[cite: 1]
+#    - Synced Files: 
+#        * unraid/github-azure-ci-runner-agent.xml[cite: 1]
+#        * unraid/icon.png[cite: 1]
+# ==============================================================================
+
 trigger: none
 
 pr: none
